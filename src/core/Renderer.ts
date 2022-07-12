@@ -5,6 +5,7 @@ import { ComponentPublicInstance, defineComponent, InjectionKey, PropType, watch
 import { bindObjectProp } from '../tools'
 import { PointerInterface, PointerPublicConfigInterface } from './usePointer'
 import useThree, { SizeInterface, ThreeConfigInterface, ThreeInterface } from './useThree'
+import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer"
 
 type CallbackType<T> = (event: T) => void
 
@@ -56,9 +57,11 @@ interface RenderFunctionEventInterface {
 
 interface RendererSetupInterface {
   canvas: HTMLCanvasElement
+  cssContainer: HTMLElement
   three: ThreeInterface
   renderer: WebGLRenderer
   size: SizeInterface
+  cssRenderer?: CSS3DRenderer
   renderFn(e: RenderFunctionEventInterface): void
   raf: boolean
 
@@ -99,6 +102,7 @@ export default defineComponent({
   name: 'Renderer',
   props: {
     params: { type: Object as PropType<WebGLRendererParameters>, default: () => ({}) },
+    css3d: { type: Boolean, default: false },
     antialias: Boolean,
     alpha: Boolean,
     autoClear: { type: Boolean, default: true },
@@ -121,6 +125,8 @@ export default defineComponent({
     const afterRenderCallbacks: RenderCallbackType[] = []
     const resizeCallbacks: ResizeCallbackType[] = []
 
+    const cssContainer = document.createElement("div")
+
     const canvas = document.createElement('canvas')
     Object.entries(attrs).forEach(([key, value]) => {
       const matches = key.match(/^on([A-Z][a-zA-Z]*)$/)
@@ -133,6 +139,7 @@ export default defineComponent({
 
     const config: ThreeConfigInterface = {
       canvas,
+      cssContainer,
       params: props.params,
       antialias: props.antialias,
       alpha: props.alpha,
@@ -156,8 +163,10 @@ export default defineComponent({
 
     return {
       canvas,
+      cssContainer,
       three,
       renderer: three.renderer,
+      cssRenderer: three.cssRenderer,
       size: three.size,
       renderFn,
       raf: true,
@@ -189,7 +198,14 @@ export default defineComponent({
   },
   mounted() {
     // appendChild won't work on reload
+    this.$el.parentNode.insertBefore(this.cssContainer, this.$el)
     this.$el.parentNode.insertBefore(this.canvas, this.$el)
+
+    // stack webgl on top of css
+    this.canvas.style.position = "absolute"
+    this.canvas.style.top = String(0)
+    this.canvas.style.zIndex = String(Number(this.cssContainer.style.zIndex) + 1)
+    if (this.css3d) this.canvas.style.pointerEvents = "none"
 
     if (this.three.init()) {
       if (this.three.pointer) {

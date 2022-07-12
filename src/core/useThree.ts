@@ -2,6 +2,7 @@ import { Camera, Object3D, OrthographicCamera, PerspectiveCamera, Scene, WebGLRe
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import usePointer, { PointerConfigInterface, PointerPublicConfigInterface, PointerInterface } from './usePointer'
+import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer"
 
 export interface SizeInterface {
   width: number
@@ -14,6 +15,7 @@ export interface SizeInterface {
 export interface ThreeConfigInterface {
   params?: WebGLRendererParameters
   canvas?: HTMLCanvasElement
+  cssContainer?: HTMLElement;
   antialias: boolean
   alpha: boolean
   autoClear: boolean
@@ -29,6 +31,7 @@ export interface ThreeConfigInterface {
 export interface ThreeInterface {
   config: ThreeConfigInterface
   renderer: WebGLRenderer
+  cssRenderer?: CSS3DRenderer
   composer?: EffectComposer
   camera?: Camera
   cameraCtrl?: OrbitControls
@@ -79,10 +82,17 @@ export default function useThree(params: ThreeConfigInterface): ThreeInterface {
 
   const renderer = createRenderer()
 
+  let cssRenderer : CSS3DRenderer | undefined
+  if (params.cssContainer) {
+    cssRenderer = createCssRenderer()
+  }
+
+
   // returned object
   const obj: ThreeInterface = {
     config,
     renderer,
+    cssRenderer,
     size,
     init,
     dispose,
@@ -101,6 +111,14 @@ export default function useThree(params: ThreeConfigInterface): ThreeInterface {
     const renderer = new WebGLRenderer({ canvas: config.canvas, antialias: config.antialias, alpha: config.alpha, ...config.params })
     renderer.autoClear = config.autoClear
     return renderer
+  }
+
+  /**
+   * create CssRenderer
+   */
+  function createCssRenderer(): CSS3DRenderer {
+    const cssRenderer = new CSS3DRenderer({ element: config.cssContainer })
+    return cssRenderer
   }
 
   /**
@@ -178,6 +196,7 @@ export default function useThree(params: ThreeConfigInterface): ThreeInterface {
     // if (obj.cameraCtrl) obj.cameraCtrl.update()
     beforeRenderCallbacks.forEach(c => c())
     obj.renderer!.render(obj.scene!, obj.camera!)
+    obj.cssRenderer!.render(obj.scene!, obj.camera!)
   }
 
   /**
@@ -225,6 +244,7 @@ export default function useThree(params: ThreeConfigInterface): ThreeInterface {
     if (obj.pointer) obj.pointer.removeListeners()
     if (obj.cameraCtrl) obj.cameraCtrl.dispose()
     if (obj.renderer) obj.renderer.dispose()
+    if (obj.cssRenderer) obj.cssRenderer.domElement.remove()
   }
 
   /**
@@ -249,6 +269,7 @@ export default function useThree(params: ThreeConfigInterface): ThreeInterface {
     size.ratio = width / height
 
     obj.renderer!.setSize(width, height, false)
+    obj.cssRenderer!.setSize(width, height)
 
     // already done in EffectComposer
     // if (obj.composer) {

@@ -34,13 +34,7 @@
     "vue-eslint-parser": "^8.0.1",
     "vue-tsc": "^0.31.4"
   },
-  "main": "build/trois.js",
-  "module": "build/trois.module.js",
-  "types": "build/trois.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/troisjs/trois.git"
-  },
+  "module": "src/export.ts",
   "keywords": [
     "threejs",
     "vuejs",

@@ -110,6 +110,7 @@ export default defineComponent({
       bindProp(this, 'userData', o3d.userData)
       bindProp(this, 'visible', o3d)
 
+      // bind object props only if this is not a css3d Object
       bindObjectProp(this, 'props', o3d)
 
       this.$emit('created', o3d)

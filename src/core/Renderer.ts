@@ -205,7 +205,7 @@ export default defineComponent({
     this.canvas.style.position = "absolute"
     this.canvas.style.top = String(0)
     this.canvas.style.zIndex = String(Number(this.cssContainer.style.zIndex) + 1)
-    if (this.css3d) this.canvas.style.pointerEvents = "none"
+    // if (this.css3d) this.canvas.style.pointerEvents = "none"
 
     if (this.three.init()) {
       if (this.three.pointer) {

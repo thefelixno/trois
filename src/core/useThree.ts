@@ -268,7 +268,7 @@ export default function useThree(params: ThreeConfigInterface): ThreeInterface {
     size.height = height
     size.ratio = width / height
 
-    obj.renderer!.setSize(width, height, false)
+    obj.renderer!.setSize(width, height, true)
     obj.cssRenderer!.setSize(width, height)
 
     // already done in EffectComposer
